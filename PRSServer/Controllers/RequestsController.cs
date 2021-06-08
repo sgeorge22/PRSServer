@@ -21,6 +21,15 @@ namespace PRSServer.Controllers
             _context = context;
         }
 
+        //GET: api/Requests/review/id
+        [HttpGet("review/{id}")]
+        public async Task<ActionResult<IEnumerable<Request>>> GetRequestUnderReview(int id)
+        {
+            return await _context.Requests
+                .Where(r => r.Status == "REVIEW" && r.UserId != id)
+                .ToListAsync();
+        }
+
         // GET: api/Requests
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Request>>> GetRequests()
@@ -72,6 +81,49 @@ namespace PRSServer.Controllers
             }
 
             return NoContent();
+        }
+
+        //PUT: api/Requests/review/id
+        [HttpPut("review/{id}")]
+        public async Task<IActionResult> PutToReview(int id)
+        {
+            var request = await _context.Requests.FindAsync(id);
+            var total = request.Total;
+
+            if(request == null)
+            {
+                return NotFound();
+            }
+            request.Status = (request.Total <= 50 && request.Total > 0) ? "APPROVED" : "REVIEW";
+            return await PutRequest(id, request);
+        }
+
+        //PUT: api/Request/review/id
+        [HttpPut("approve/{id}")]
+        public async Task<IActionResult> PutToApprove(int id)
+        {
+            var request = await _context.Requests.FindAsync(id);
+
+            if(request == null)
+            {
+                return NotFound();
+            }
+            request.Status = "APPROVED";
+            return await PutRequest(id, request);
+        }
+
+        //PUT: api/Requests/review/id
+        [HttpPut("reject/{id}")]
+        public async Task<IActionResult> PutToReject(int id)
+        {
+            var request = await _context.Requests.FindAsync(id);
+            
+            if(request == null)
+            {
+                return NotFound();
+            }
+            request.Status = "REJECTED";
+            return await PutRequest(id, request);
         }
 
         // POST: api/Requests
