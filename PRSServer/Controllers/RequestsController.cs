@@ -21,20 +21,25 @@ namespace PRSServer.Controllers
             _context = context;
         }
 
+
         //GET: api/Requests/review/id
         [HttpGet("review/{id}")]
-        public async Task<ActionResult<IEnumerable<Request>>> GetRequestUnderReview(int id)
+        public async Task<ActionResult<IEnumerable<Request>>> GetRequestIDUnderReview(int id)
         {
             return await _context.Requests
                 .Where(r => r.Status == "REVIEW" && r.UserId != id)
                 .ToListAsync();
         }
 
+        
+
         // GET: api/Requests
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Request>>> GetRequests()
         {
-            return await _context.Requests.ToListAsync();
+            return await _context.Requests
+                .Include(x => x.User)
+                .ToListAsync();
         }
 
         // GET: api/Requests/5
@@ -48,6 +53,20 @@ namespace PRSServer.Controllers
                 return NotFound();
             }
 
+            return request;
+        }
+
+        //GET: api/Requests/id/user
+        [HttpGet("{id}/user")]
+        public async Task<ActionResult<Request>> GetRequestAndUser(int id)
+        {
+            var request = await _context.Requests
+                .Include(x => x.User)
+                .SingleOrDefaultAsync(x => x.Id == id);
+            if(request == null)
+            {
+                return NotFound();
+            }
             return request;
         }
 
@@ -83,8 +102,8 @@ namespace PRSServer.Controllers
             return NoContent();
         }
 
-        //PUT: api/Requests/review/id
-        [HttpPut("review/{id}")]
+        //PUT: api/Requests/id/review
+        [HttpPut("{id}/review")]
         public async Task<IActionResult> PutToReview(int id)
         {
             var request = await _context.Requests.FindAsync(id);
@@ -98,8 +117,8 @@ namespace PRSServer.Controllers
             return await PutRequest(id, request);
         }
 
-        //PUT: api/Request/review/id
-        [HttpPut("approve/{id}")]
+        //PUT: api/Request/id/review
+        [HttpPut("{id}/approve")]
         public async Task<IActionResult> PutToApprove(int id)
         {
             var request = await _context.Requests.FindAsync(id);
@@ -112,8 +131,8 @@ namespace PRSServer.Controllers
             return await PutRequest(id, request);
         }
 
-        //PUT: api/Requests/review/id
-        [HttpPut("reject/{id}")]
+        //PUT: api/Requests/id/review
+        [HttpPut("{id}/reject")]
         public async Task<IActionResult> PutToReject(int id)
         {
             var request = await _context.Requests.FindAsync(id);
