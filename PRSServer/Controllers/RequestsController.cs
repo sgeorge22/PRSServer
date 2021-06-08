@@ -39,6 +39,8 @@ namespace PRSServer.Controllers
         {
             return await _context.Requests
                 .Include(x => x.User)
+                .Include(x => x.RequestLine)
+
                 .ToListAsync();
         }
 
