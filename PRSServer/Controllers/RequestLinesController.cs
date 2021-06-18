@@ -16,6 +16,19 @@ namespace PRSServer.Controllers
     {
         private readonly PRSServerContext _context;
 
+        
+        private async Task RecalculateRequestTotal(int reqid)
+        {
+            var request = await _context.Requests.FindAsync(reqid);
+            if (request == null) throw new Exception("FATAL: Request is not found to recalculate!");
+            request.Total = (from rl in _context.RequestLines
+                             join p in _context.Products
+                             on rl.ProductId equals p.Id
+                             where rl.RequestId == reqid
+                             select new { LineTotal = rl.Quantity * p.Price }).Sum(x => x.LineTotal);
+            await _context.SaveChangesAsync();
+        }
+
         public RequestLinesController(PRSServerContext context)
         {
             _context = context;
