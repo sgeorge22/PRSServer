@@ -42,6 +42,21 @@ namespace PRSServer.Controllers
             return product;
         }
 
+        //GET: api/Products/5/detailed
+        [HttpGet("{id}/detailed")]
+        public async Task<ActionResult<Product>> GetProductDetailed(int id)
+        {
+            var product = await _context.Products
+                .Include(v => v.Vendor)
+                .SingleOrDefaultAsync(p => p.Id == id);
+
+            if(product == null)
+            {
+                return NotFound();
+            }
+            return product;
+        }
+
         // PUT: api/Products/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.

@@ -22,16 +22,38 @@ namespace PRSServer.Controllers
         }
 
 
-        //GET: api/Requests/review/id
-        [HttpGet("review/{id}")]
-        public async Task<ActionResult<IEnumerable<Request>>> GetRequestIDUnderReview(int id)
+        //GET: api/Requests/5/underReview
+        [HttpGet("{id}/underReview")]
+        public async Task<ActionResult<IEnumerable<Request>>> GetRequestUnderReview(int id)
         {
             return await _context.Requests
                 .Where(r => r.Status == "REVIEW" && r.UserId != id)
                 .ToListAsync();
         }
 
-        
+        //GET: api/Request/detailed
+        [HttpGet("detailed")]
+        public async Task<ActionResult<IEnumerable<Request>>> GetRequestsDetailed()
+        {
+            return await _context.Requests
+                .Include(u => u.User)
+                .ToListAsync();
+        }
+
+        //GET: api/Requests/5/detailed
+        [HttpGet("{id}/detailed")]
+        public async Task<ActionResult<Request>> GetRequestDetailed(int id)
+        {
+            var request = await _context.Requests
+                .Include(u => u.User)
+                .SingleOrDefaultAsync(r => r.Id == id);
+
+            if (request == null)
+            {
+                return NotFound();
+            }
+            return request;
+        }
 
         // GET: api/Requests
         [HttpGet]
@@ -39,7 +61,7 @@ namespace PRSServer.Controllers
         {
             return await _context.Requests
                 .Include(x => x.User)
-                .Include(x => x.RequestLine)
+                .Include(x => x.RequestLines)
 
                 .ToListAsync();
         }

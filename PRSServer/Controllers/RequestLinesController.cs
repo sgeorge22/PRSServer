@@ -41,6 +41,16 @@ namespace PRSServer.Controllers
             return await _context.RequestLines.ToListAsync();
         }
 
+        //GET: api/RequestLines/detailed
+        [HttpGet("detailed")]
+        public async Task<ActionResult<IEnumerable<RequestLine>>> GetRequestLinesDetailed()
+        {
+            return await _context.RequestLines
+                .Include(r => r.Request).ThenInclude(u => u.User)
+                .Include(p => p.Product).ThenInclude(v => v.Vendor)
+                .ToListAsync();
+        }
+
         // GET: api/RequestLines/5
         [HttpGet("{id}")]
         public async Task<ActionResult<RequestLine>> GetRequestLine(int id)
@@ -52,6 +62,22 @@ namespace PRSServer.Controllers
                 return NotFound();
             }
 
+            return requestLine;
+        }
+
+        //GET: api/RequestLines/5/detailed
+        [HttpGet("{id}/detailed")]
+        public async Task<ActionResult<RequestLine>> GetRequestLineDetailed(int id)
+        {
+            var requestLine = await _context.RequestLines
+                .Include(r => r.Request).ThenInclude(u => u.User)
+                .Include(p => p.Product).ThenInclude(v => v.Vendor)
+                .SingleOrDefaultAsync(rl => rl.Id == id);
+
+            if(requestLine == null)
+            {
+                return NotFound();
+            }
             return requestLine;
         }
 
