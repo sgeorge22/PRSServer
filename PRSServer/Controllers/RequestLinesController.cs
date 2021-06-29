@@ -25,7 +25,7 @@ namespace PRSServer.Controllers
                              join p in _context.Products
                              on rl.ProductId equals p.Id
                              where rl.RequestId == reqid
-                             select new { LineTotal = rl.Quantity * p.Price }).Sum(x => x.LineTotal);
+                             select new { LineTotal = rl.Quantity * p.Price }).Sum(s => s.LineTotal);
             await _context.SaveChangesAsync();
         }
 

@@ -25,7 +25,7 @@ namespace PRSServer.Controllers
         [HttpGet("{username}/{password}")]
         public async Task<ActionResult<User>> Login(string username, string password)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(x => x.Username == username && x.Password == password);
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Username == username && u.Password == password);
 
             if (user == null)
             {
