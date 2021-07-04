@@ -46,7 +46,6 @@ namespace PRSServer.Controllers
         public async Task<ActionResult<IEnumerable<RequestLine>>> GetRequestLinesDetailed()
         {
             return await _context.RequestLines
-                .Include(r => r.Request).ThenInclude(u => u.User)
                 .Include(p => p.Product).ThenInclude(v => v.Vendor)
                 .ToListAsync();
         }
@@ -70,7 +69,6 @@ namespace PRSServer.Controllers
         public async Task<ActionResult<RequestLine>> GetRequestLineDetailed(int id)
         {
             var requestLine = await _context.RequestLines
-                .Include(r => r.Request).ThenInclude(u => u.User)
                 .Include(p => p.Product).ThenInclude(v => v.Vendor)
                 .SingleOrDefaultAsync(rl => rl.Id == id);
 
@@ -82,8 +80,6 @@ namespace PRSServer.Controllers
         }
 
         // PUT: api/RequestLines/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
         public async Task<IActionResult> PutRequestLine(int id, RequestLine requestLine)
         {
@@ -97,6 +93,7 @@ namespace PRSServer.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await RecalculateRequestTotal(requestLine.RequestId);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -114,13 +111,12 @@ namespace PRSServer.Controllers
         }
 
         // POST: api/RequestLines
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
         public async Task<ActionResult<RequestLine>> PostRequestLine(RequestLine requestLine)
         {
             _context.RequestLines.Add(requestLine);
             await _context.SaveChangesAsync();
+            await RecalculateRequestTotal(requestLine.RequestId);
 
             return CreatedAtAction("GetRequestLine", new { id = requestLine.Id }, requestLine);
         }
@@ -137,6 +133,7 @@ namespace PRSServer.Controllers
 
             _context.RequestLines.Remove(requestLine);
             await _context.SaveChangesAsync();
+            await RecalculateRequestTotal(requestLine.RequestId);
 
             return requestLine;
         }
