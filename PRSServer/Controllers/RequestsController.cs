@@ -25,7 +25,9 @@ namespace PRSServer.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Request>>> GetRequests()
         {
-            return await _context.Requests.ToListAsync();
+            return await _context.Requests
+                .Include(x => x.User)
+                .ToListAsync();
         }
 
         // GET: api/Requests/5
