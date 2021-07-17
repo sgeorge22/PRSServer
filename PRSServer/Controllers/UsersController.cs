@@ -26,14 +26,12 @@ namespace PRSServer.Controllers
         public async Task<ActionResult<User>> Login(string username, string password)
         {
             var user = await _context.Users.SingleOrDefaultAsync(u => u.Username == username && u.Password == password);
-
             if (user == null)
-            {
-                return NotFound();
-            }
-
+            { return NotFound(); }
             return user;
         }
+
+
 
         // GET: api/Users
         [HttpGet]

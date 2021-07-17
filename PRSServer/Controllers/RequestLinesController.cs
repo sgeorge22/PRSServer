@@ -16,38 +16,24 @@ namespace PRSServer.Controllers
     {
         private readonly PRSServerContext _context;
 
-        
-        private async Task RecalculateRequestTotal(int reqid)
+
+        //Recalculating request line total
+        private async Task RecalculateRequestTotal(int requestid)
         {
-            var request = await _context.Requests.FindAsync(reqid);
-            if (request == null) throw new Exception("FATAL: Request is not found to recalculate!");
-            request.Total = (from rl in _context.RequestLines
-                             join p in _context.Products
-                             on rl.ProductId equals p.Id
-                             where rl.RequestId == reqid
-                             select new { LineTotal = rl.Quantity * p.Price }).Sum(s => s.LineTotal);
+            var req = await _context.Requests.FindAsync(requestid);
+            if (req == null) throw new Exception("Request is not found to recalc");
+            var reqtotal = (from l in _context.RequestLines
+                            join p in _context.Products on l.ProductId equals p.Id
+                            where l.RequestId == requestid
+                            select new { LineTotal = l.Quantity * p.Price }).Sum(x => x.LineTotal);
+            req.Total = reqtotal;
             await _context.SaveChangesAsync();
         }
-
-        public RequestLinesController(PRSServerContext context)
-        {
-            _context = context;
-        }
-
         // GET: api/RequestLines
         [HttpGet]
         public async Task<ActionResult<IEnumerable<RequestLine>>> GetRequestLines()
         {
             return await _context.RequestLines.ToListAsync();
-        }
-
-        //GET: api/RequestLines/detailed
-        [HttpGet("detailed")]
-        public async Task<ActionResult<IEnumerable<RequestLine>>> GetRequestLinesDetailed()
-        {
-            return await _context.RequestLines
-                .Include(p => p.Product).ThenInclude(v => v.Vendor)
-                .ToListAsync();
         }
 
         // GET: api/RequestLines/5
@@ -64,22 +50,9 @@ namespace PRSServer.Controllers
             return requestLine;
         }
 
-        //GET: api/RequestLines/5/detailed
-        [HttpGet("{id}/detailed")]
-        public async Task<ActionResult<RequestLine>> GetRequestLineDetailed(int id)
-        {
-            var requestLine = await _context.RequestLines
-                .Include(p => p.Product).ThenInclude(v => v.Vendor)
-                .SingleOrDefaultAsync(rl => rl.Id == id);
-
-            if(requestLine == null)
-            {
-                return NotFound();
-            }
-            return requestLine;
-        }
-
         // PUT: api/RequestLines/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for
+        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
         public async Task<IActionResult> PutRequestLine(int id, RequestLine requestLine)
         {
@@ -111,6 +84,8 @@ namespace PRSServer.Controllers
         }
 
         // POST: api/RequestLines
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for
+        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
         public async Task<ActionResult<RequestLine>> PostRequestLine(RequestLine requestLine)
         {
@@ -134,7 +109,6 @@ namespace PRSServer.Controllers
             _context.RequestLines.Remove(requestLine);
             await _context.SaveChangesAsync();
             await RecalculateRequestTotal(requestLine.RequestId);
-
             return requestLine;
         }
 

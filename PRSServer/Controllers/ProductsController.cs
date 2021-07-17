@@ -26,9 +26,9 @@ namespace PRSServer.Controllers
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
             return await _context.Products
-                .Include(x => x.Vendor)
+                .Include(p => p.Vendor)
                 .ToListAsync();
-        }
+        } //add vendor for read operation
 
         // GET: api/Products/5
         [HttpGet("{id}")]
@@ -37,6 +37,7 @@ namespace PRSServer.Controllers
             var product = await _context.Products
                 .Include(p => p.Vendor)
                 .SingleOrDefaultAsync(p => p.Id == id);
+            //add vendor read operation
 
             if (product == null)
             {
@@ -46,8 +47,9 @@ namespace PRSServer.Controllers
             return product;
         }
 
-
         // PUT: api/Products/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for
+        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProduct(int id, Product product)
         {
@@ -78,6 +80,8 @@ namespace PRSServer.Controllers
         }
 
         // POST: api/Products
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for
+        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
         public async Task<ActionResult<Product>> PostProduct(Product product)
         {
